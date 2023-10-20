@@ -4,7 +4,7 @@ using namespace std;
 enum Colour
 {
 	RED,
-	BLACK,
+	BLACK
 };
 
 template<typename T>
@@ -22,6 +22,15 @@ struct RBTreeNode
 		Data(InOther),
 		Col(RED)
 	{ }
+
+	// 拷贝构造
+	RBTreeNode(const RBTreeNode<T>*& InOther) :
+		Left(nullptr),
+		Right(nullptr),
+		Parent(nullptr),
+		Data(InOther->Data),
+		Col(InOther->Col)
+	{ }
 };
 
 
@@ -38,6 +47,13 @@ struct TreeIterator
 
 	TreeIterator(Node* InNode) :
 		node{ InNode }
+	{ }
+
+	typedef TreeIterator<T, T&, T*> iterator;
+
+	// 拷贝构造函数
+	TreeIterator(const iterator& InIterator):
+		node{ InIterator.node }
 	{ }
 
 	Ref operator*()
@@ -92,7 +108,7 @@ struct TreeIterator
 	{
 		Self tmp = *this;
 		++(*this);
-		return tmp;
+		return *this;
 	}
 
 	Self operator--()
@@ -126,18 +142,17 @@ struct TreeIterator
 		--(*this);
 		return tmp;
 	}
-
-
 };
 
 
 template <typename K,typename T,typename KeyOfT>
 class RBTree
 { 
-public:
 	typedef RBTreeNode<T> Node;
+public:
 	typedef TreeIterator<T, T&, T*> iterator;
 	typedef TreeIterator<T, const T&,  const T*> const_iterator;
+
 	RBTree():
 		root{nullptr}
 	{ }
@@ -159,6 +174,40 @@ public:
 		delete InRoot;
 	}
 
+	// 拷贝构造函数
+	RBTree(const RBTree<K, T, KeyOfT>& InTree) :
+		root(nullptr)
+	{
+		root = copy(InTree.root);
+	}
+
+	Node* copy(const Node* InRoot)
+	{
+		if (InRoot == nullptr)
+			return nullptr;
+
+		Node* newnode = new Node(InRoot);
+		
+		newnode->Left = copy(InRoot->Left);
+		newnode->Right = copy(InRoot->Right);
+
+		if (newnode->Right)
+		{
+			newnode->Right->Parent = newnode;
+		}
+
+		if (newnode->Left)
+		{
+			newnode->Left->Parent = newnode;
+		}
+		return newnode;
+	}
+
+	RBTree<K, T, KeyOfT>& operator=(RBTree<K, T, KeyOfT> InTree)
+	{
+		swap(root, InTree.root);
+		return *this;
+	}
 
 	iterator begin()
 	{
@@ -167,12 +216,12 @@ public:
 		{
 			left = left->Left;
 		}
-		return  (left);
+		return  iterator(left);
 	}
 
 	iterator end()
 	{
-		return iterator(nullptr);
+		return nullptr;
 	}
 
 	const_iterator begin() const
@@ -187,12 +236,46 @@ public:
 
 	const_iterator end() const
 	{
-		return const_iterator(nullptr);
+		return nullptr;
 	}
 
-	Node* find(const K& InKey)
+	bool empty() const
 	{
+		return root == nullptr;
+	}
+
+	int size()
+	{
+		int count = 0;
+		for (auto& e : *this)
+		{
+			count++;
+		}
+		return count;
+	}
+
+	int count(const K& key) const
+	{
+		KeyOfT kot;
+		int Count = 0;
+		for (auto& e : *this)
+		{
+			if (kot(e) == key)
+			{
+				Count++;
+			}
+		}
+		return Count;
+	}
+
+	iterator find(const K& InKey) const
+	{
+		// 使用类实例化一个对象oft，通过oft去调用map/set 中相同的operator() ，取出对应的key值
 		KeyOfT oft;
+		if (root == nullptr)
+		{
+			return iterator(nullptr);
+		}
 		Node* cur = root;
 		while (cur)
 		{
@@ -206,11 +289,13 @@ public:
 			}
 			else
 			{
-				return cur;
+				return iterator(cur);
 			}
 		}
-		return nullptr;
+		return iterator(nullptr);
 	}
+
+
 
 	pair<iterator, bool> insert(const T& InOther)
 	{
