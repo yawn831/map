@@ -295,8 +295,6 @@ public:
 		return iterator(nullptr);
 	}
 
-
-
 	pair<iterator, bool> insert(const T& InOther)
 	{
 		KeyOfT oft;
@@ -402,6 +400,24 @@ public:
 		}
 		root->Col = BLACK;
 		return make_pair(iterator(newnode), true);
+	}
+
+	int getheight() const
+	{
+		return GetHeight(root);
+	}
+
+	int GetHeight(Node* InRoot)const
+	{
+		if (InRoot == nullptr)
+		{
+			return 0;
+		}
+
+		int left = GetHeight(InRoot->Left);
+		int right = GetHeight(InRoot->Right);
+		
+		return 1 + max(left, right);
 	}
 
 	void RotateLR(Node* parent)

@@ -68,6 +68,11 @@ using namespace std;
 			return rbt.count();
 		}
 
+		int getheight()const
+		{
+			return rbt.getheight();
+		}
+
 	private:
 		RBTree<K, pair<const K, V>, MapKeyOfT> rbt;
 	};
