@@ -254,6 +254,7 @@ public:
 		return count;
 	}
 
+
 	int count(const K& key) const
 	{
 		KeyOfT kot;
@@ -266,6 +267,78 @@ public:
 			}
 		}
 		return Count;
+	}
+
+
+	void erase(iterator InIterator)
+	{
+		Node* cur = InIterator.node;
+		while (cur != root && cur->Col == BLACK)
+		{
+			if (cur == cur->Parent->Left)
+			{
+				Node* brother = cur->Parent->Right;
+				if (brother->Col == RED)
+				{
+					brother->Col = BLACK;
+					cur->Parent->Col = RED;
+					RotateL(cur->Parent);
+					brother = cur->Parent->Right;
+				}
+				if (brother->Left->Col == BLACK && brother->Right->Col == BLACK)
+				{
+					brother->Col = RED;
+					cur = cur->Parent;
+				}
+				else
+				{
+					if (brother->Right->Col == BLACK)
+					{
+						brother->Left->Col = BLACK;
+						brother->Col = RED;
+						RotateR(brother);
+						brother = cur->Parent->Right;
+					}
+					brother->Col = cur->Parent->Col;
+					cur->Parent->Col = BLACK;
+					brother->Right->Col = BLACK;
+					RotateL(cur->Parent);
+					cur = root;
+				}
+			}
+			else
+			{
+				Node* brother = cur->Parent->Left;
+				if (brother->Col == RED)
+				{
+					brother->Col = BLACK;
+					cur->Parent->Col = RED;
+					RotateR(cur->Parent);
+					brother = cur->Parent->Left;
+				}
+				if (brother->Left->Col == BLACK && brother->Right->Col == BLACK)
+				{
+					brother->Col = RED;
+					cur = cur->Parent;
+				}
+				else
+				{
+					if (brother->Left->Col == BLACK)
+					{
+						brother->Right->Col = BLACK;
+						brother->Col = RED;
+						RotateL(brother);
+						brother = cur->Parent->Left;
+					}
+					brother->Col = cur->Parent->Col;
+					brother->Left->Col = BLACK;
+					cur->Parent->Col = BLACK;
+					RotateR(cur->Parent);
+					cur = root;
+				}
+			}
+		}
+		cur->Col = BLACK;
 	}
 
 	iterator find(const K& InKey) const
@@ -297,7 +370,6 @@ public:
 
 	pair<iterator, bool> insert(const T& InOther)
 	{
-		KeyOfT oft;
 		if (root == nullptr)
 		{
 			root = new Node(InOther);
@@ -305,6 +377,7 @@ public:
 			root->Col = BLACK;
 			return make_pair(root, true);
 		}
+		KeyOfT oft;
 		Node* parent = nullptr;
 		Node* cur = root;
 		while (cur)
@@ -324,24 +397,22 @@ public:
 				return make_pair(iterator(root), false);
 			}
 		}
-		Node* newnode = new Node(InOther);
-		newnode->Col = RED;
+		cur = new Node(InOther);
+		Node* newnode = cur;
 		if (oft(parent->Data) < oft(InOther))
 		{
-			parent->Right = newnode;
-			newnode->Parent = parent;
+			parent->Right = cur;
 		}
 		else
 		{
-			parent->Left = newnode;
-			newnode->Parent = parent;
+			parent->Left = cur;
 		}
-		cur = newnode;
+		cur->Parent = parent;
 
 		while (parent && parent->Col == RED)
 		{
 			Node* gfather = parent->Parent;
-			if (parent = gfather->Left)
+			if (parent == gfather->Left)
 			{
 				Node* uncle = gfather->Right;
 				if (uncle && uncle->Col == RED)

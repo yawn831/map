@@ -55,7 +55,7 @@ using namespace std;
 
 		iterator find(const K& InKey) const
 		{
-			return rbt.find();
+			return rbt.find(InKey);
 		}
 
 		int size()
@@ -71,6 +71,11 @@ using namespace std;
 		int getheight()const
 		{
 			return rbt.getheight();
+		}
+
+		void erase(iterator InIterator)
+		{
+			rbt.erase(InIterator);
 		}
 
 	private:
