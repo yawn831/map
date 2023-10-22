@@ -78,6 +78,11 @@ using namespace std;
 			rbt.erase(InIterator);
 		}
 
+		void erase(const K& InKey)
+		{
+			rbt.erase(InKey);
+		}
+
 	private:
 		RBTree<K, pair<const K, V>, MapKeyOfT> rbt;
 	};

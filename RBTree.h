@@ -272,73 +272,79 @@ public:
 
 	void erase(iterator InIterator)
 	{
+		Node* child, *parent;
+		Colour color;
 		Node* cur = InIterator.node;
-		while (cur != root && cur->Col == BLACK)
+		if ((cur->Left != nullptr) && (cur->Right) != nullptr)
 		{
-			if (cur == cur->Parent->Left)
+			Node* repalce = cur;
+			repalce = repalce->Right;
+			while (repalce->Left != nullptr)
+				repalce = repalce->Left;
+			if (cur->Parent)
 			{
-				Node* brother = cur->Parent->Right;
-				if (brother->Col == RED)
-				{
-					brother->Col = BLACK;
-					cur->Parent->Col = RED;
-					RotateL(cur->Parent);
-					brother = cur->Parent->Right;
-				}
-				if (brother->Left->Col == BLACK && brother->Right->Col == BLACK)
-				{
-					brother->Col = RED;
-					cur = cur->Parent;
-				}
+				if (cur->Parent->Left == cur)
+					cur->Parent->Left = repalce;
 				else
-				{
-					if (brother->Right->Col == BLACK)
-					{
-						brother->Left->Col = BLACK;
-						brother->Col = RED;
-						RotateR(brother);
-						brother = cur->Parent->Right;
-					}
-					brother->Col = cur->Parent->Col;
-					cur->Parent->Col = BLACK;
-					brother->Right->Col = BLACK;
-					RotateL(cur->Parent);
-					cur = root;
-				}
+					cur->Parent->Right = repalce;
+			}
+			else
+				root = repalce;
+
+			child = repalce->Right;
+			parent = repalce->Parent;
+
+			color = repalce->Col;
+
+			if (parent == cur)
+			{
+				parent = repalce;
 			}
 			else
 			{
-				Node* brother = cur->Parent->Left;
-				if (brother->Col == RED)
-				{
-					brother->Col = BLACK;
-					cur->Parent->Col = RED;
-					RotateR(cur->Parent);
-					brother = cur->Parent->Left;
-				}
-				if (brother->Left->Col == BLACK && brother->Right->Col == BLACK)
-				{
-					brother->Col = RED;
-					cur = cur->Parent;
-				}
-				else
-				{
-					if (brother->Left->Col == BLACK)
-					{
-						brother->Right->Col = BLACK;
-						brother->Col = RED;
-						RotateL(brother);
-						brother = cur->Parent->Left;
-					}
-					brother->Col = cur->Parent->Col;
-					brother->Left->Col = BLACK;
-					cur->Parent->Col = BLACK;
-					RotateR(cur->Parent);
-					cur = root;
-				}
+				if (child)
+					child->Parent = parent;
+
+				parent->Left = child;
+				
+				repalce->Right = cur->Right;
+				cur->Right->Parent = repalce;
 			}
+
+			repalce->Parent = cur->Parent;
+			repalce->Col = cur->Col;
+			repalce->Left = cur->Left;
+			cur->Left->Parent = repalce;
+			//
+			delete cur;
+			return;
 		}
-		cur->Col = BLACK;
+		if (cur->Left != nullptr)
+			child = cur->Left;
+		else
+			child = cur->Right;
+
+		parent = cur->Parent;
+
+		color = cur->Col;
+		if (child)
+			child->Parent = parent;
+		if (parent)
+		{
+			if (parent->Left == cur)
+				parent->Left = child;
+			else
+				parent->Right = child;
+		}
+		else
+			root = child;
+
+		delete cur;
+	}
+
+	void erase(const K& InKey)
+	{
+		erase(find(InKey));
 	}
 
 	iterator find(const K& InKey) const
